@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单号拼接工具</title>
+    <style>
+        /* 整体样式，简洁美观 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        /* 输入框+粘贴按钮容器 */
+        .input-wrap {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        input, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        textarea {
+            flex: 1;
+            min-height: 100px;
+        }
+        .btn-paste {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #17a2b8;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex: none;
+            height: 40px;
+            margin-top: 0;
+        }
+        .btn-paste:hover {
+            background-color: #138496;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.reset {
+            background-color: #6c757d;
+        }
+        button.reset:hover {
+            background-color: #545b62;
+        }
+        button.copy {
+            background-color: #28a745;
+            flex: none;
+            width: 100px;
+        }
+        button.copy:hover {
+            background-color: #218838;
+        }
+        #result {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            min-height: 80px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .tip {
+            color: #999;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .paste-tip, .copy-tip {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-tip {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>订单号拼接工具</h1>
+        
+        <!-- 订单号输入框（新增粘贴按钮） -->
+        <div class="form-group">
+            <label for="csNums">请输入订单号（多个订单号用空格分隔）：</label>
+            <div class="input-wrap">
+                <textarea id="csNums" placeholder="示例：123 456 789"></textarea>
+                <button class="btn-paste" onclick="pasteNums()">粘贴订单号</button>
+            </div>
+            <div class="tip">提示：多个订单号之间用空格分开即可</div>
+            <div class="paste-tip" id="pasteTip">✅ 粘贴成功！</div>
+            <div class="error-tip" id="errorTip">❌ 粘贴失败（剪贴板为空/无权限）</div>
+        </div>
+        
+        <!-- 选择按钮组 -->
+        <div class="btn-group">
+            <button onclick="joinNum('999')">拼接 999</button>
+            <button onclick="joinNum('997')">拼接 997</button>
+            <button onclick="joinNum('995')">拼接 995</button>
+            <button onclick="joinNum('994')">拼接 994</button>
+            <button class="reset" onclick="resetForm()">清空</button>
+        </div>
+        
+        <!-- 结果展示区 -->
+        <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label>拼接结果：</label>
+                <button class="copy" onclick="copyResult()">复制结果</button>
+            </div>
+            <div id="result">请输入订单号并选择拼接类型</div>
+            <div class="copy-tip" id="copyTip">✅ 复制成功！</div>
+        </div>
+    </div>
+
+    <script>
+        // 核心拼接函数
+        function joinNum(targetNum) {
+            // 获取输入的订单号
+            const csNums = document.getElementById('csNums').value.trim();
+            
+            // 校验输入
+            if (!csNums) {
+                document.getElementById('result').textContent = "请先输入订单号！";
+                return;
+            }
+            
+            // 分割订单号并拼接目标数字（按任意空格分割，兼容多个空格/制表符）
+            const numList = csNums.split(/\s+/);
+            const result = numList.map(num => `${targetNum}${num}`).join(',');
+            
+            // 展示结果
+            document.getElementById('result').textContent = result;
+        }
+
+        // 清空表单函数
+        function resetForm() {
+            document.getElementById('csNums').value = "";
+            document.getElementById('result').textContent = "请输入订单号并选择拼接类型";
+            // 隐藏所有提示
+            document.getElementById('copyTip').style.display = "none";
+            document.getElementById('pasteTip').style.display = "none";
+            document.getElementById('errorTip').style.display = "none";
+        }
+
+        // 复制结果到剪贴板
+        function copyResult() {
+            const resultText = document.getElementById('result').textContent;
+            // 排除默认提示文字
+            if (resultText === "请输入订单号并选择拼接类型" || resultText === "请先输入订单号！") {
+                alert("暂无可复制的结果！");
+                return;
+            }
+            // 复制到剪贴板
+            navigator.clipboard.writeText(resultText).then(() => {
+                const copyTip = document.getElementById('copyTip');
+                copyTip.style.display = "block";
+                // 3秒后隐藏提示
+                setTimeout(() => {
+                    copyTip.style.display = "none";
+                }, 3000);
+            }).catch(() => {
+                alert("复制失败，请手动复制！");
+            });
+        }
+
+        // 新增：粘贴订单号（从剪贴板读取内容到输入框）
+        function pasteNums() {
+            // 先隐藏之前的提示
+            document.getElementById('pasteTip').style.display = "none";
+            document.getElementById('errorTip').style.display = "none";
+
+            // 读取剪贴板内容
+            navigator.clipboard.readText().then((clipText) => {
+                if (clipText.trim()) { // 剪贴板有内容
+                    document.getElementById('csNums').value = clipText.trim();
+                    document.getElementById('pasteTip').style.display = "block";
+                    // 3秒后隐藏提示
+                    setTimeout(() => {
+                        document.getElementById('pasteTip').style.display = "none";
+                    }, 3000);
+                } else { // 剪贴板为空
+                    document.getElementById('errorTip').style.display = "block";
+                    setTimeout(() => {
+                        document.getElementById('errorTip').style.display = "none";
+                    }, 3000);
+                }
+            }).catch((err) => { // 读取失败（无权限/浏览器不支持）
+                document.getElementById('errorTip').style.display = "block";
+                setTimeout(() => {
+                    document.getElementById('errorTip').style.display = "none";
+                }, 3000);
+                console.log("粘贴失败原因：", err);
+            });
+        }
+    </script>
+</body>
+</html>
